@@ -1,6 +1,9 @@
 package hkhattabi.views;
 import hkhattabi.models.Actor;
+import hkhattabi.models.Position;
+import javafx.scene.Cursor;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 
 
 public class GameView {
@@ -20,7 +23,7 @@ public class GameView {
 
 
 
-    public Pane getGamePane() {
+    public Pane getPane() {
         return this.gamePane;
     }
 }

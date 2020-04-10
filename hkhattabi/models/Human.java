@@ -33,7 +33,7 @@ public abstract class Human extends Actor {
         m = (pointEnd.getY() - pointStart.getY()) / (pointEnd.getX() - pointStart.getX());
         p = this.position.getX() == 0 ? pointStart.getY() : pointStart.getY() - (m * pointStart.getX());
 
-        System.out.println(m);
+
         if (weaponEquiped.getClip().size() > 0) {
             Bullet bullet = weaponEquiped.getClip().get(weaponEquiped.getClip().size() - 1);
             bullet.setM(m);
@@ -45,9 +45,13 @@ public abstract class Human extends Actor {
             bullet.view.setTranslateY(bullet.position.getY());
             bullet.exitBarrel();
             weaponEquiped.getClip().remove(bullet);
-        } else if (isReloading == false) {
-            isReloading = true;
-            reload();
+            notifyView("Munition " + weaponEquiped.getClip().size() + " / 16 ", ViewType.MUNITION_COUNT);
+
+            if (isReloading == false && weaponEquiped.getClip().size() == 0) {
+                notifyView("Rechargement ...", ViewType.MUNITION_COUNT);
+                isReloading = true;
+                reload();
+            }
         }
 
     }
@@ -61,11 +65,12 @@ public abstract class Human extends Actor {
             public void run() {
                 weaponEquiped.fillClip();
                 isReloading = false;
+                notifyView("Munition 16/16", ViewType.MUNITION_COUNT );
                 timer.cancel();
             }
         };
 
-        timer.schedule(task, 1000);
+        timer.schedule(task, 500);
 
 
     }

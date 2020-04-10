@@ -10,7 +10,6 @@ public class Main extends Application {
     public void start(Stage stage) throws Exception {
         GameController gameController = new GameController();
         gameController.getAppView().onInit(stage);
-        gameController.startGame();
 
     }
 
