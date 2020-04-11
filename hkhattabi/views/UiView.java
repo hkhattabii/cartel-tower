@@ -1,12 +1,10 @@
 package hkhattabi.views;
 
 import hkhattabi.controllers.GameController;
+import hkhattabi.models.Player;
 import hkhattabi.models.ViewType;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -20,15 +18,12 @@ public class UiView {
     protected Text stageCountText;
     protected Text munitionCountText;
     protected Text healthCountText;
-    protected Text ennemycountText;
-
+    protected Text enemyCountText;
     public UiView() {
         uiPane = new Pane();
         uiPane.setPrefWidth(300);
         uiPane.setPrefHeight(300);
     }
-
-
     public void displayMenu(GameController gameController) {
         menu = new VBox();
         Button button = new Button("JOUER");
@@ -36,72 +31,37 @@ public class UiView {
         menu.getChildren().addAll(button);
         addNode(menu);
     }
-
-
-
-    public void displayGameInfo() {
+    public void displayGameInfo(Player currentPlayer) {
         gameInfo = new VBox();
-
-
-
-        stageCountText = new Text("Etage : 0");
-        stageCountText.setFont(Font.font(16));
-        stageCountText.setFill(Color.WHITE);
-        stageCountText.setX(16);
-        stageCountText.setY(16);
-
-
-        munitionCountText = new Text("munitions 16 / 16");
-        munitionCountText.setFont(Font.font(16));
-        munitionCountText.setFill(Color.WHITE);
-        munitionCountText.setX(32);
-        munitionCountText.setY(32);
-
-        healthCountText = new Text("Vie : 250");
-        healthCountText.setFont(Font.font(16));
-        healthCountText.setFill(Color.WHITE);
-        healthCountText.setX(16);
-        munitionCountText.setY(900);
-
-        ennemycountText = new Text("Ennemy restant : " + 1);
-        ennemycountText.setFont(Font.font(16));
-        ennemycountText.setFill(Color.WHITE);
-        ennemycountText.setX(16);
-        ennemycountText.setY(900);
-
-
-
-
-
-
-
-
-
-
-
-
-        gameInfo.getChildren().addAll(stageCountText, munitionCountText, healthCountText, ennemycountText);
+        stageCountText = createUiText("Etage : 0");
+        munitionCountText = createUiText("munitions " + currentPlayer.getWeaponEquipped().getClip().size() + " / 16");
+        healthCountText = createUiText("Vie : " + currentPlayer.getHealth() );
+        enemyCountText = createUiText("Ennemy restant : 1");
+        gameInfo.getChildren().addAll(stageCountText, munitionCountText, healthCountText, enemyCountText);
         addNode(gameInfo);
+    }
+    public Text createUiText(String textToAdd) {
+        Text text = new Text(textToAdd);
+        text.setFont(Font.font(16));
+        text.setFill(Color.WHITE);
+        text.setX(16);
+        text.setY(900);
+        return text;
 
     }
-
-
-
     public void addNode(Node node) {
         uiPane.getChildren().addAll(node);
     }
-
     public void removeNode(Node node) {
         uiPane.getChildren().remove(node);
     }
-
     public void updateTextUi(String newText, ViewType viewType) {
         switch (viewType){
             case HEALTH_COUNT:
                 healthCountText.setText(newText);
                 break;
             case ENNEMY_COUNT:
-                ennemycountText.setText(newText);
+                enemyCountText.setText(newText);
                 break;
             case MUNITION_COUNT:
                 munitionCountText.setText(newText);
@@ -113,13 +73,11 @@ public class UiView {
                 break;
         }
 }
-
     public Pane getPane() {
         return uiPane;
     }
-
     public Node getMenu() {
-        return this.menu;
+        return menu;
     }
 
 }

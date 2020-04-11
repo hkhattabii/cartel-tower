@@ -2,12 +2,9 @@ package hkhattabi.models.weapon;
 
 import hkhattabi.Factory;
 import hkhattabi.models.Human;
-import javafx.geometry.Point2D;
-
 import java.util.ArrayList;
 
 public class Gun extends Weapon {
-
     public Gun(Human usedBy) {
         super(usedBy);
         this.damage = 32;
@@ -15,7 +12,6 @@ public class Gun extends Weapon {
         this.clip = new ArrayList<>();
         this.fillClip();
     }
-
 
     @Override
     public void fillClip() {

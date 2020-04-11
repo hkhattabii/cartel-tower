@@ -1,19 +1,14 @@
 package hkhattabi.views;
 import hkhattabi.controllers.GameController;
 import hkhattabi.models.Actor;
-import hkhattabi.models.Ennemy;
-import hkhattabi.models.Position;
+import hkhattabi.models.Player;
 import hkhattabi.models.ViewType;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
-import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
-
-import java.util.ArrayList;
-import java.util.HashMap;
 
 
 public class AppView {
@@ -23,7 +18,6 @@ public class AppView {
     protected Pane appPane;
     protected int WIDTH;
     protected int HEIGHT;
-    protected Position<Double> cursorPosition;
 
 
     public AppView(GameController gameController, int gameWidth, int gameHeight) {
@@ -33,7 +27,6 @@ public class AppView {
         this.appPane = new Pane();
         this.WIDTH = gameWidth;
         this.HEIGHT = gameHeight;
-        this.cursorPosition = new Position<Double>(0.0,0.0);
     }
 
 
@@ -43,16 +36,10 @@ public class AppView {
         Scene scene = new Scene(this.appPane);
         stage.setTitle("CARTEL TOWER");
 
-
-
         scene.setOnKeyPressed(event -> gameController.onKeyPressed(event.getCode()));
         scene.setOnKeyReleased(event -> gameController.onKeyReleased(event.getCode()));
-        scene.setOnMouseClicked(event -> gameController.onMouseClicked(new Position<Double>(event.getX(), event.getY())));
+        scene.setOnMouseClicked(event -> gameController.onMouseClicked());
         scene.setOnMouseMoved(event -> gameController.onMouseMoved(event));
-
-
-        uiView.displayMenu(gameController);
-
 
         this.appPane.getChildren().addAll(appWindow, uiView.getPane());
         this.appPane.setCursor(Cursor.CROSSHAIR);
@@ -69,43 +56,25 @@ public class AppView {
         this.uiView.removeNode(this.uiView.getMenu());
     }
 
-    public void displayGame() {
+    public void displayGame(Player currentPlayer) {
         this.appPane.getChildren().addAll(gameView.getPane());
-        uiView.displayGameInfo();
+        uiView.displayGameInfo(currentPlayer);
     }
 
-    public void addActor(Actor actor) {
-        this.gameView.addActor(actor);
+    public void displayMenu() {
+        uiView.displayMenu(this.gameController);
     }
 
-    public void removeActor(Actor actor) {
-        this.gameView.removeActor(actor);
+    public void updateUiView(String newText, ViewType viewType) {
+        this.uiView.updateTextUi(newText, viewType);
     }
-
-
-    public void updateUiView(String newtext, ViewType viewType) {
-        this.uiView.updateTextUi(newtext, viewType);
-    }
-
-
-
-
-
-
+    public void updateGameView(Actor actor, ViewType viewType) {this.gameView.updateWorld(actor, viewType);}
     public int getGameWidth() {
         return this.WIDTH;
     }
-
     public int getGameHeight() {
         return this.HEIGHT;
     }
 
 
-    public GameView getGameView() {
-        return gameView;
-    }
-
-    public Position<Double> getCursorPosition() {
-        return cursorPosition;
-    }
 }

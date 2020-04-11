@@ -1,15 +1,12 @@
 package hkhattabi.models;
-
-
 import hkhattabi.models.weapon.Weapon;
 import javafx.scene.shape.Rectangle;
-
 import java.util.Timer;
 import java.util.TimerTask;
 
 
 public abstract class Human extends Actor {
-    protected Weapon weaponEquiped;
+    protected Weapon weaponEquipped;
     protected double health;
     protected boolean isReloading;
     protected boolean isLookingRight;
@@ -22,8 +19,7 @@ public abstract class Human extends Actor {
     }
 
     public abstract void equipWeapons();
-    public abstract void die();
-
+    public abstract void die(int ennemyCount);
     public abstract void shoot(Position<Double> target);
 
 
@@ -32,49 +28,37 @@ public abstract class Human extends Actor {
         TimerTask task = new TimerTask() {
             @Override
             public void run() {
-                weaponEquiped.fillClip();
+                weaponEquipped.fillClip();
                 isReloading = false;
                 timer.cancel();
             }
         };
-
         timer.schedule(task, 500);
     }
 
-    public Weapon getWeaponEquiped() {
-        return weaponEquiped;
+    public Weapon getWeaponEquipped() {
+        return weaponEquipped;
     }
-
-
     public void setLookingRight(boolean lookingRight) {
         isLookingRight = lookingRight;
     }
-
-
     public void setShooting(boolean shooting) {
         isShooting = shooting;
     }
-
     public boolean isShooting() {
         return isShooting;
     }
-
-
-
     public boolean isDead() {
         return isDead;
     }
-
-    public void setDead(boolean dead) {
-        isDead = dead;
-    }
-
     public double getHealth() {
         return health;
     }
-
     public void setHealth(double health) {
         this.health = health;
+        if (this instanceof  Player) {
+            this.notifyUiView("Vie : " + this.health, ViewType.HEALTH_COUNT);
+        }
     }
 }
 

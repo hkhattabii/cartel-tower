@@ -8,8 +8,7 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        GameController gameController = new GameController();
-        gameController.getAppView().onInit(stage);
+        GameController gameController = new GameController(stage);
 
     }
 

@@ -6,6 +6,7 @@ import hkhattabi.views.AppView;
 import javafx.animation.AnimationTimer;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
+import javafx.stage.Stage;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -13,32 +14,35 @@ import java.util.HashMap;
 public class GameController {
     private int GAME_WIDTH = 1366;
     private int GAME_HEIGHT = 768;
-    private int stageNumber;
     private int ennemyCount;
     private boolean gameStarted;
     private AppView appView;
     private Player currentPlayer;
     private HashMap<KeyCode, Boolean> keys;
+    private Position<Double> cursorPosition;
     private ArrayList<Ennemy>  ennemies;
     private ArrayList<Bullet> ennemyBullets;
     private ArrayList<Bullet> playerBullets;
-    public GameController() {
-        this.stageNumber = 1;
+
+    public GameController(Stage stage) {
+        int stageNumber = 1;
         this.ennemyCount = 1;
         this.gameStarted = false;
         this.appView = new AppView(this, this.GAME_WIDTH, this.GAME_HEIGHT);
         this.keys = new HashMap<>();
+        this.cursorPosition = new Position<>(0.0,0.0);
         this.ennemies = new ArrayList<>();
         this.ennemyBullets = new ArrayList<>();
         this.playerBullets = new ArrayList<>();
-
         Actor.appView = appView;
+        appView.onInit(stage);
+        this.displayMenu();
     }
     public void startGame() {
         this.gameStarted = true;
         this.removeMenu();
-        this.displayGame();
         this.initPlayer();
+        this.displayGame();
         this.callReinforcement();
         AnimationTimer ticks = new AnimationTimer() {
             @Override
@@ -63,14 +67,10 @@ public class GameController {
     public void hurtHuman(Human human, double damage) {
         if (!human.isDead()) {
             human.setHealth(human.getHealth() - damage);
-            if (human instanceof Player) {
-                human.notifyView("Vie : " + human.getHealth(), ViewType.HEALTH_COUNT);
-            }
             if (human.getHealth() <= 0) {
-                human.die();
+                human.die(this.ennemies.size() - 1);
                 if (human instanceof  Ennemy) {
                     this.destroyActor(human);
-                    human.notifyView("Ennemis restant : " + (ennemies.size() - 1), ViewType.ENNEMY_COUNT);
                 } else if (human instanceof Player) {
                     this.destroyActor(human);
                 }
@@ -121,9 +121,9 @@ public class GameController {
                 ennemy.setLookingRight(true);
             }
             if (ennemy.isShooting()) {
-                if (ennemy.getWeaponEquiped().getClip().size() > 0) {
+                if (ennemy.getWeaponEquipped().getClip().size() > 0) {
                     Bullet bullet;
-                    bullet = ennemy.getWeaponEquiped().getClip().get(ennemy.getWeaponEquiped().getClip().size() - 1);
+                    bullet = ennemy.getWeaponEquipped().getClip().get(ennemy.getWeaponEquipped().getClip().size() - 1);
                     spawnActor(bullet);
                     ennemyBullets.add(bullet);
                     ennemy.setShooting(false);
@@ -138,18 +138,18 @@ public class GameController {
         if (this.isPressed(KeyCode.Q) && this.currentPlayer.getPosition().getX() > 0 + (Actor.width)) {
             this.currentPlayer.moveLeft();
         }
-        if (this.isPressed(KeyCode.S) && this.currentPlayer.getPosition().getY() < this.appView.getGameHeight() - (Actor.height * 4)) {
+        if (this.isPressed(KeyCode.S) && this.currentPlayer.getPosition().getY() < this.GAME_HEIGHT - (Actor.height * 4)) {
             this.currentPlayer.moveBottom();
         }
-        if (this.isPressed(KeyCode.D) && this.currentPlayer.getPosition().getX() < this.appView.getGameWidth() -( Actor.width * 3)) {
+        if (this.isPressed(KeyCode.D) && this.currentPlayer.getPosition().getX() < this.GAME_WIDTH -( Actor.width * 3)) {
             this.currentPlayer.moveRight();
         } if (this.isPressed(KeyCode.SHIFT)) {
             for (Ennemy ennemy : ennemies) {
-                ennemy.getWeaponEquiped().setRateOfFire(4);
+                ennemy.getWeaponEquipped().setRateOfFire(4);
             }
         } else {
             for (Ennemy ennemy : ennemies) {
-                ennemy.getWeaponEquiped().setRateOfFire(16);
+                ennemy.getWeaponEquipped().setRateOfFire(16);
             }
         }
     }
@@ -165,8 +165,8 @@ public class GameController {
     }
     public void onMouseMoved(MouseEvent event) {
         if (gameStarted) {
-            this.appView.getCursorPosition().setX(event.getX());
-            this.appView.getCursorPosition().setY(event.getY());
+            this.cursorPosition.setX(event.getX());
+            this.cursorPosition.setY(event.getY());
             if (event.getX() < currentPlayer.getPosition().getX()) {
                 this.currentPlayer.setLookingRight(false);
 
@@ -179,14 +179,14 @@ public class GameController {
         }
     }
 
-    public void onMouseClicked(Position<Double> target) {
+    public void onMouseClicked() {
         if (gameStarted) {
-            if (this.currentPlayer.getWeaponEquiped().getClip().size() > 0 ) {
-                Bullet bullet = this.currentPlayer.getWeaponEquiped().getClip().get(this.currentPlayer.getWeaponEquiped().getClip().size() - 1);
+            if (this.currentPlayer.getWeaponEquipped().getClip().size() > 0 ) {
+                Bullet bullet = this.currentPlayer.getWeaponEquipped().getClip().get(this.currentPlayer.getWeaponEquipped().getClip().size() - 1);
                 spawnActor(bullet);
                 playerBullets.add(bullet);
             }
-            this.currentPlayer.shoot(this.appView.getCursorPosition());
+            this.currentPlayer.shoot(this.cursorPosition);
         }
     }
     public void spawnActor(Actor actor) {
@@ -197,7 +197,7 @@ public class GameController {
     }
     public void callReinforcement() {
         for (int i = 0; i < ennemyCount; i++) {
-            Ennemy ennemy = Factory.createEnnemy(appView.getGameWidth(), appView.getGameHeight(), this.currentPlayer.getPosition());
+            Ennemy ennemy = Factory.createEnemy(this.GAME_WIDTH, this.GAME_HEIGHT, this.currentPlayer.getPosition());
             ennemies.add(ennemy);
             spawnActor(ennemy);
         }
@@ -205,11 +205,8 @@ public class GameController {
     public boolean isPressed(Object key) {
         return this.keys.getOrDefault(key, false);
     }
-    public AppView getAppView() {
-        return this.appView;
-    }
     public void initPlayer() {
-        Player player = Factory.createPlayer(appView.getGameWidth(), appView.getGameHeight());
+        Player player = Factory.createPlayer(this.GAME_WIDTH, this.GAME_HEIGHT);
         this.currentPlayer = player;
         this.spawnActor(player);
     }
@@ -217,7 +214,10 @@ public class GameController {
         this.appView.removeMenu();
     }
     public void displayGame() {
-        this.appView.displayGame();
+        this.appView.displayGame(this.currentPlayer);
     }
+    public void displayMenu() {this.appView.displayMenu();}
+
+
 
 }
