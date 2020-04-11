@@ -19,18 +19,26 @@ public class Actor {
     }
 
 
+    public boolean isCollidedWith(Actor actor) {
+        return this.view.getBoundsInParent().intersects(actor.getView().getBoundsInParent());
+    }
+
     public void notifyView(String newText, ViewType viewType) {
-        switch (viewType){
-            case MUNITION_COUNT:
-                appView.updateMunitionNumber(newText);
+        appView.updateUiView(newText, viewType);
+    }
+
+    public void notifyGameView(ViewType viewType) {
+        switch (viewType) {
+            case ADD_ACTOR:
+                appView.addActor(this);
                 break;
-            case STAGE_COUNT:
-                appView.updateStageNumber(newText);
+            case REMOVE_ACTOR:
+                appView.removeActor(this);
                 break;
             default:
                 break;
-        }
 
+        }
     }
 
     public Rectangle getView() {
@@ -38,8 +46,13 @@ public class Actor {
     }
 
 
+    public double getWidth() {
+        return width;
+    }
+
     public Position<Double> getPosition() {
         return position;
     }
+
 
 }

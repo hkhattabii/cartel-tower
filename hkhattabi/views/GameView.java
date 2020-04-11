@@ -5,6 +5,8 @@ import javafx.scene.Cursor;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
+import java.util.ArrayList;
+
 
 public class GameView {
     private Pane gamePane;
@@ -16,6 +18,7 @@ public class GameView {
     public void addActor(Actor actor) {
         this.gamePane.getChildren().addAll(actor.getView());
     }
+
 
     public void removeActor(Actor actor) {
         this.gamePane.getChildren().remove(actor.getView());

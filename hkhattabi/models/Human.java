@@ -1,7 +1,6 @@
 package hkhattabi.models;
 
 
-import hkhattabi.models.weapon.Bullet;
 import hkhattabi.models.weapon.Weapon;
 import javafx.scene.shape.Rectangle;
 
@@ -14,65 +13,32 @@ public abstract class Human extends Actor {
     protected double health;
     protected boolean isReloading;
     protected boolean isLookingRight;
-
+    protected  boolean isShooting;
+    protected boolean isDead;
 
     public Human(Rectangle actorView, Position<Double> position) {
         super(actorView, position);
         this.isReloading = false;
     }
 
+    public abstract void equipWeapons();
     public abstract void die();
 
-    public void shoot(Position<Double> target) {
-        double m  = 0;
-        double p = 0;
-        int direction = isLookingRight ? 1 : -1;
-        Position<Double> pointStart = this.position;
-        Position<Double> pointEnd = target;
-
-        m = (pointEnd.getY() - pointStart.getY()) / (pointEnd.getX() - pointStart.getX());
-        p = this.position.getX() == 0 ? pointStart.getY() : pointStart.getY() - (m * pointStart.getX());
-
-
-        if (weaponEquiped.getClip().size() > 0) {
-            Bullet bullet = weaponEquiped.getClip().get(weaponEquiped.getClip().size() - 1);
-            bullet.setM(m);
-            bullet.setP(p);
-            bullet.setDirection(this.isLookingRight ?  1 : -1);
-            bullet.position.setY(this.position.getY());
-            bullet.position.setX(this.position.getX());
-            bullet.view.setTranslateX(bullet.position.getX());
-            bullet.view.setTranslateY(bullet.position.getY());
-            bullet.exitBarrel();
-            weaponEquiped.getClip().remove(bullet);
-            notifyView("Munition " + weaponEquiped.getClip().size() + " / 16 ", ViewType.MUNITION_COUNT);
-
-            if (isReloading == false && weaponEquiped.getClip().size() == 0) {
-                notifyView("Rechargement ...", ViewType.MUNITION_COUNT);
-                isReloading = true;
-                reload();
-            }
-        }
-
-    }
+    public abstract void shoot(Position<Double> target);
 
 
     public void reload() {
         Timer timer = new Timer();
-
         TimerTask task = new TimerTask() {
             @Override
             public void run() {
                 weaponEquiped.fillClip();
                 isReloading = false;
-                notifyView("Munition 16/16", ViewType.MUNITION_COUNT );
                 timer.cancel();
             }
         };
 
         timer.schedule(task, 500);
-
-
     }
 
     public Weapon getWeaponEquiped() {
@@ -82,6 +48,33 @@ public abstract class Human extends Actor {
 
     public void setLookingRight(boolean lookingRight) {
         isLookingRight = lookingRight;
+    }
+
+
+    public void setShooting(boolean shooting) {
+        isShooting = shooting;
+    }
+
+    public boolean isShooting() {
+        return isShooting;
+    }
+
+
+
+    public boolean isDead() {
+        return isDead;
+    }
+
+    public void setDead(boolean dead) {
+        isDead = dead;
+    }
+
+    public double getHealth() {
+        return health;
+    }
+
+    public void setHealth(double health) {
+        this.health = health;
     }
 }
 

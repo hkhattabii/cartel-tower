@@ -1,6 +1,9 @@
 package hkhattabi.views;
 import hkhattabi.controllers.GameController;
+import hkhattabi.models.Actor;
+import hkhattabi.models.Ennemy;
 import hkhattabi.models.Position;
+import hkhattabi.models.ViewType;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
@@ -8,6 +11,8 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 
 
@@ -21,13 +26,13 @@ public class AppView {
     protected Position<Double> cursorPosition;
 
 
-    public AppView(GameController gameController) {
+    public AppView(GameController gameController, int gameWidth, int gameHeight) {
         this.gameController = gameController;
         this.gameView = new GameView();
         this.uiView = new UiView();
         this.appPane = new Pane();
-        this.WIDTH = 1920;
-        this.HEIGHT = 1080;
+        this.WIDTH = gameWidth;
+        this.HEIGHT = gameHeight;
         this.cursorPosition = new Position<Double>(0.0,0.0);
     }
 
@@ -69,13 +74,23 @@ public class AppView {
         uiView.displayGameInfo();
     }
 
-    public void updateStageNumber(String newText) {
-        this.uiView.updateTextUi(this.uiView.getStageCountText(), newText);
+    public void addActor(Actor actor) {
+        this.gameView.addActor(actor);
     }
 
-    public void updateMunitionNumber(String newText) {
-        this.uiView.updateTextUi(this.uiView.getMunitionCountText(), newText);
+    public void removeActor(Actor actor) {
+        this.gameView.removeActor(actor);
     }
+
+
+    public void updateUiView(String newtext, ViewType viewType) {
+        this.uiView.updateTextUi(newtext, viewType);
+    }
+
+
+
+
+
 
     public int getGameWidth() {
         return this.WIDTH;
