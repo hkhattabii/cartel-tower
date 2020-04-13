@@ -1,25 +1,19 @@
 package hkhattabi.models.weapon;
 
-import hkhattabi.Factory;
 import hkhattabi.models.Human;
-import javafx.geometry.Point2D;
-
 import java.util.ArrayList;
 
 public class Shotgun extends Weapon {
 
     public Shotgun(Human usedBy) {
         super(usedBy);
-        this.damage = 32;
-        this.rateOfFire = 16;
+        this.bulletSize = 16;
+        this.name = "Fusil à pompe";
+        this.damage = 100;
+        this.rateOfFire = 12;
         this.clip = new ArrayList<>();
+        this.maxBulletCount = 6;
         this.fillClip();
     }
 
-    @Override
-    public void fillClip() {
-        for (int i = 0; i < 6; i++) {
-            this.clip.add(Factory.createBullet(this));
-        }
-    }
 }

@@ -1,14 +1,16 @@
 package hkhattabi.models;
-import hkhattabi.views.AppView;
+import hkhattabi.views.GameView;
 import javafx.scene.shape.Rectangle;
 
 
+
 public class Actor {
-    public static AppView appView;
-    protected Rectangle view;
-    protected Position<Double> position;
     public static double width = 16;
     public static double height = 16;
+    public static GameView gameView;
+    protected Rectangle view;
+    protected Position<Double> position;
+
 
     public Actor(Rectangle actorView, Position<Double> position) {
         this.view = actorView;
@@ -20,11 +22,15 @@ public class Actor {
         return this.view.getBoundsInParent().intersects(actor.getView().getBoundsInParent());
     }
     public void notifyUiView(String newText, ViewType viewType) {
-        appView.updateUiView(newText, viewType);
+        gameView.updateView(newText, viewType);
     }
     public void notifyGameView(ViewType viewType) {
-        appView.updateGameView(this, viewType);
+        gameView.updateView(view, viewType);
     }
+
+
+
+
     public Rectangle getView() {
         return view;
     }

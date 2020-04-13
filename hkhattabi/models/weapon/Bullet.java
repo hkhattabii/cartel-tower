@@ -27,16 +27,11 @@ public class Bullet extends Actor {
         animationTimer.start();
     }
     public void followTrajectory() {
-        if (this.position.getX() < 0 || this.position.getY() > appView.getGameHeight() || this.position.getX() > appView.getGameWidth() ||this.position.getY() < 0) {
-            animationTimer.stop();
-            animationTimer = null;
-        } else {
-            for (int i = 0; i < this.shootedBy.getRateOfFire(); i++) {
-                this.position.setX(this.position.getX() + direction);
-                this.position.setY((this.m * this.position.getX()) + this.p);
-                this.view.setTranslateX(this.position.getX());
-                this.view.setTranslateY(this.position.getY());
-            }
+        for (int i = 0; i < this.shootedBy.getRateOfFire(); i++) {
+            this.position.setX(this.position.getX() + direction);
+            this.position.setY((this.m * this.position.getX()) + this.p);
+            this.view.setTranslateX(this.position.getX());
+            this.view.setTranslateY(this.position.getY());
         }
     }
     public void setM(double m) {
@@ -56,5 +51,9 @@ public class Bullet extends Actor {
     }
     public boolean isCollided() {
         return this.isCollided;
+    }
+    public void stopAnimationTimer() {
+        animationTimer.stop();
+        animationTimer = null;
     }
 }

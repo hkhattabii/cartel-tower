@@ -1,12 +1,19 @@
 package hkhattabi.controllers;
 import hkhattabi.Factory;
 import hkhattabi.models.*;
+import hkhattabi.models.weapon.Bazooka;
 import hkhattabi.models.weapon.Bullet;
-import hkhattabi.views.AppView;
+import hkhattabi.models.weapon.Gun;
+import hkhattabi.models.weapon.Shotgun;
+import hkhattabi.views.GameView;
 import javafx.animation.AnimationTimer;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
+
+import java.beans.PropertyChangeSupport;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -14,36 +21,43 @@ import java.util.HashMap;
 public class GameController {
     private int GAME_WIDTH = 1366;
     private int GAME_HEIGHT = 768;
+    private int stageNumber;
     private int ennemyCount;
     private boolean gameStarted;
-    private AppView appView;
-    private Player currentPlayer;
+    private boolean gamepaused;
+    private GameView gameView;
+    public static Player currentPlayer;
     private HashMap<KeyCode, Boolean> keys;
     private Position<Double> cursorPosition;
     private ArrayList<Ennemy>  ennemies;
     private ArrayList<Bullet> ennemyBullets;
     private ArrayList<Bullet> playerBullets;
 
+
     public GameController(Stage stage) {
-        int stageNumber = 1;
+        this.stageNumber = 1;
         this.ennemyCount = 1;
         this.gameStarted = false;
-        this.appView = new AppView(this, this.GAME_WIDTH, this.GAME_HEIGHT);
+        this.gamepaused = false;
+        this.gameView = new GameView(this, stage);
         this.keys = new HashMap<>();
         this.cursorPosition = new Position<>(0.0,0.0);
         this.ennemies = new ArrayList<>();
         this.ennemyBullets = new ArrayList<>();
         this.playerBullets = new ArrayList<>();
-        Actor.appView = appView;
-        appView.onInit(stage);
+        gameView.init();
         this.displayMenu();
     }
+
+
+
+
     public void startGame() {
-        this.gameStarted = true;
-        this.removeMenu();
-        this.initPlayer();
-        this.displayGame();
-        this.callReinforcement();
+        gameStarted = true;
+        Actor.gameView = gameView;
+        initPlayer();
+        displayGame();
+        callReinforcement();
         AnimationTimer ticks = new AnimationTimer() {
             @Override
             public void handle(long l) {
@@ -53,15 +67,18 @@ public class GameController {
         ticks.start();
     }
     public void update() {
-        listenUserInput();
-        listenEnnemy();
-        listenPlayerBullets();
-        listenEnnemyBullets();
-        listenEnnemyCount();
+        if (!gamepaused) {
+            listenUserInput();
+            listenEnnemy();
+            listenPlayerBullets();
+            listenEnnemyBullets();
+            listenEnnemyCount();
 
-        this.playerBullets.removeIf(Bullet::isCollided);
-        this.ennemyBullets.removeIf(Bullet::isCollided);
-        this.ennemies.removeIf(Ennemy::isDead);
+            this.playerBullets.removeIf(Bullet::isCollided);
+            this.ennemyBullets.removeIf(Bullet::isCollided);
+            this.ennemies.removeIf(Ennemy::isDead);
+        }
+
 
     }
     public void hurtHuman(Human human, double damage) {
@@ -78,13 +95,17 @@ public class GameController {
         }
     }
     public void onBulletCollided(Bullet bullet, Human human) {
+        boolean isBazzokaBullet = (bullet.getShootedBy() instanceof Bazooka);
         this.hurtHuman(human, bullet.getShootedBy().getDamage());
-        this.destroyActor(bullet);
-        bullet.setIsCollided(true);
+        if (!isBazzokaBullet) {
+            this.destroyActor(bullet);
+            bullet.setIsCollided(true);
+        }
     }
 
     public void checkBulletExitedWindow(Bullet bullet) {
         if (bullet.getPosition().getX() < 0 || bullet.getPosition().getY() > this.GAME_HEIGHT || bullet.getPosition().getX() > this.GAME_WIDTH ||bullet.getPosition().getY() < 0) {
+            bullet.stopAnimationTimer();
             bullet.setIsCollided(true);
             this.destroyActor(bullet);
         }
@@ -92,6 +113,8 @@ public class GameController {
     public void listenEnnemyCount() {
         if (ennemies.size() == 0) {
             ennemyCount++;
+            stageNumber += 1;
+            this.currentPlayer.notifyUiView("Etage : " + stageNumber, ViewType.STAGE_COUNT);
             callReinforcement();
         }
     }
@@ -143,7 +166,17 @@ public class GameController {
         }
         if (this.isPressed(KeyCode.D) && this.currentPlayer.getPosition().getX() < this.GAME_WIDTH -( Actor.width * 3)) {
             this.currentPlayer.moveRight();
-        } if (this.isPressed(KeyCode.SHIFT)) {
+        }
+        if (this.isPressed(KeyCode.DIGIT1)) {
+            this.currentPlayer.setWeaponEquiped(0);
+        }
+        if (this.isPressed(KeyCode.DIGIT2)) {
+            this.currentPlayer.setWeaponEquiped(1);
+        }
+        if (this.isPressed(KeyCode.DIGIT3)) {
+            this.currentPlayer.setWeaponEquiped(2);
+        }
+        if (this.isPressed(KeyCode.SHIFT)) {
             for (Ennemy ennemy : ennemies) {
                 ennemy.getWeaponEquipped().setRateOfFire(4);
             }
@@ -151,6 +184,9 @@ public class GameController {
             for (Ennemy ennemy : ennemies) {
                 ennemy.getWeaponEquipped().setRateOfFire(16);
             }
+        }
+        if (this.isPressed(KeyCode.ESCAPE)) {
+            displayFinishGame();
         }
     }
     public void onKeyPressed(KeyCode keyCode) {
@@ -180,15 +216,29 @@ public class GameController {
     }
 
     public void onMouseClicked() {
-        if (gameStarted) {
+        if (gameStarted && !gamepaused) {
             if (this.currentPlayer.getWeaponEquipped().getClip().size() > 0 ) {
-                Bullet bullet = this.currentPlayer.getWeaponEquipped().getClip().get(this.currentPlayer.getWeaponEquipped().getClip().size() - 1);
-                spawnActor(bullet);
-                playerBullets.add(bullet);
+                if (this.currentPlayer.getWeaponEquipped() instanceof Gun ||this.currentPlayer.getWeaponEquipped() instanceof Bazooka) {
+                    Bullet bullet = this.currentPlayer.getWeaponEquipped().getClip().get(this.currentPlayer.getWeaponEquipped().getClip().size() - 1);
+                    spawnActor(bullet);
+                    playerBullets.add(bullet);
+                } else if (this.currentPlayer.getWeaponEquipped() instanceof Shotgun) {
+                    Bullet bullet = this.currentPlayer.getWeaponEquipped().getClip().get(this.currentPlayer.getWeaponEquipped().getClip().size() - 1);
+                    Bullet bullet2 = this.currentPlayer.getWeaponEquipped().getClip().get(this.currentPlayer.getWeaponEquipped().getClip().size() - 2);
+                    Bullet bullet3 = this.currentPlayer.getWeaponEquipped().getClip().get(this.currentPlayer.getWeaponEquipped().getClip().size() - 3);
+                    spawnActor(bullet);
+                    spawnActor(bullet2);
+                    spawnActor(bullet3);
+                    playerBullets.add(bullet);
+                    playerBullets.add(bullet2);
+                    playerBullets.add(bullet3);
+                }
             }
             this.currentPlayer.shoot(this.cursorPosition);
         }
     }
+
+
     public void spawnActor(Actor actor) {
         actor.notifyGameView(ViewType.ADD_ACTOR);
     }
@@ -210,14 +260,39 @@ public class GameController {
         this.currentPlayer = player;
         this.spawnActor(player);
     }
-    public void removeMenu() {
-        this.appView.removeMenu();
+    public void continueGame(String stageNumber) {
+        this.stageNumber = Integer.parseInt(stageNumber);
+        this.ennemyCount = Integer.parseInt(stageNumber);
+        startGame();
+
+
     }
     public void displayGame() {
-        this.appView.displayGame(this.currentPlayer);
+        this.gameView.displayGame(currentPlayer, this.stageNumber, this.ennemyCount);
     }
-    public void displayMenu() {this.appView.displayMenu();}
+    public void displayMenu() {
+        this.gameView.displayMenu();
+    }
+    public void displaySettings() {this.gameView.displaySettings();}
+    public void displayFinishGame() {
+        this.gamepaused = true;
+        this.gameView.displayFinishGame();
+    }
+    public void saveUser(String username) {
+        System.out.println(username);
+        try {
+            FileWriter fileWriter = new FileWriter("users.txt");
+            fileWriter.write(username  + ";" + stageNumber);
+            fileWriter.close();
+            System.out.println("Successfully wrote to the file.");
+        } catch (IOException e) {
+            System.out.println("An error occured.");
+            e.printStackTrace();
+        }
 
+    }
 
-
+    public void setGamepaused(boolean gamepaused) {
+        this.gamepaused = gamepaused;
+    }
 }

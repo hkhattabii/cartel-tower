@@ -27,10 +27,6 @@ public class Ennemy extends Human {
         this.timeline.play();
     }
 
-
-
-
-
     @Override
     public void equipWeapons() {
         this.weaponEquipped = new Gun(this);
@@ -44,32 +40,14 @@ public class Ennemy extends Human {
     @Override
     public void shoot(Position<Double> target) {
         this.isShooting = true;
-        double m;
-        double p;
-        int direction = isLookingRight ? 1 : -1;
-        Position<Double> pointStart = this.position;
-
-        m = (target.getY() - pointStart.getY()) / (target.getX() - pointStart.getX());
-        p = this.position.getX() == 0 ? pointStart.getY() : pointStart.getY() - (m * pointStart.getX());
-
-
         if (weaponEquipped.getClip().size() > 0) {
             Bullet bullet = weaponEquipped.getClip().get(weaponEquipped.getClip().size() - 1);
-            bullet.setM(m);
-            bullet.setP(p);
-            bullet.setDirection(direction);
-            bullet.position.setX(direction == 1 ? this.position.getX() + this.getWidth() : this.position.getX());
-            bullet.position.setY(this.position.getY());
-            bullet.view.setTranslateX(bullet.position.getX());
-            bullet.view.setTranslateY(bullet.position.getY());
-            bullet.exitBarrel();
-            weaponEquipped.getClip().remove(bullet);
+            computeBulletTrajectory(bullet, target);
+        }
+        if (!isReloading && weaponEquipped.getClip().size() == 0) {
+            isReloading = true;
+            reload();
 
-            if (!isReloading && weaponEquipped.getClip().size() == 0) {
-                isReloading = true;
-                reload();
-
-            }
         }
     }
     public void aimPlayer(Position<Double> position) {

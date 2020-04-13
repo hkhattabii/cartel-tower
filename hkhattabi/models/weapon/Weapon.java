@@ -1,22 +1,31 @@
 package hkhattabi.models.weapon;
 
+import hkhattabi.Factory;
 import hkhattabi.models.Human;
 import java.util.ArrayList;
 
 public abstract class Weapon {
+    protected int bulletSize;
+    protected int maxBulletCount;
+    protected String name;
     protected Human usedBy;
-    protected boolean isTimeSlowedDown;
     protected ArrayList<Bullet> clip;
     protected int rateOfFire;
     protected double damage;
+
     Weapon(Human usedBy) {
         this.usedBy = usedBy;
-        this.isTimeSlowedDown = false;
     }
+
     public ArrayList<Bullet> getClip() {
         return clip;
     }
-    public abstract void fillClip();
+
+    public void fillClip() {
+        for (int i = 0; i < maxBulletCount; i++){
+            this.clip.add(Factory.createBullet(this));
+        }
+    }
     public double getDamage() {
         return damage;
     }
@@ -28,5 +37,14 @@ public abstract class Weapon {
     }
     public Human getUsedBy() {
         return usedBy;
+    }
+    public String getName() {return name;}
+
+    public int getMaxBulletCount() {
+        return maxBulletCount;
+    }
+
+    public int getBulletSize() {
+        return bulletSize;
     }
 }

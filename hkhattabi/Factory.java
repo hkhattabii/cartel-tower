@@ -16,7 +16,7 @@ public class Factory {
     }
     public static Bullet createBullet(Weapon weapon) {
         boolean usedByPlayer = (weapon.getUsedBy() instanceof Player);
-        Rectangle rectangle = new Rectangle(4, 4);
+        Rectangle rectangle = new Rectangle(weapon.getBulletSize(), weapon.getBulletSize());
         rectangle.setFill(usedByPlayer ? Color.BLUE : Color.RED);
 
         return new Bullet(rectangle, weapon);
