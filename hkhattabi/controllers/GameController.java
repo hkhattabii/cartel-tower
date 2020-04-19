@@ -7,15 +7,21 @@ import hkhattabi.models.weapon.Gun;
 import hkhattabi.models.weapon.Shotgun;
 import hkhattabi.views.GameView;
 import javafx.animation.AnimationTimer;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.scene.control.ColorPicker;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
-import java.beans.PropertyChangeSupport;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Scanner;
 
 
 public class GameController {
@@ -23,20 +29,21 @@ public class GameController {
     private int GAME_HEIGHT = 768;
     private int stageNumber;
     private int ennemyCount;
+    private int durationBeforeStartStage;
     private boolean gameStarted;
     private boolean gamepaused;
+    private Timeline timeline;
     private GameView gameView;
-    public static Player currentPlayer;
     private HashMap<KeyCode, Boolean> keys;
     private Position<Double> cursorPosition;
     private ArrayList<Ennemy>  ennemies;
     private ArrayList<Bullet> ennemyBullets;
     private ArrayList<Bullet> playerBullets;
+    public static Player currentPlayer;
 
 
     public GameController(Stage stage) {
-        this.stageNumber = 1;
-        this.ennemyCount = 1;
+        this.durationBeforeStartStage = 3;
         this.gameStarted = false;
         this.gamepaused = false;
         this.gameView = new GameView(this, stage);
@@ -55,9 +62,12 @@ public class GameController {
     public void startGame() {
         gameStarted = true;
         Actor.gameView = gameView;
+        stageNumber = 1;
+        ennemyCount = 1;
         initPlayer();
         displayGame();
         callReinforcement();
+        //startTimerOnStageStarted();
         AnimationTimer ticks = new AnimationTimer() {
             @Override
             public void handle(long l) {
@@ -67,7 +77,7 @@ public class GameController {
         ticks.start();
     }
     public void update() {
-        if (!gamepaused) {
+        if (!gamepaused && gameStarted) {
             listenUserInput();
             listenEnnemy();
             listenPlayerBullets();
@@ -116,6 +126,7 @@ public class GameController {
             stageNumber += 1;
             this.currentPlayer.notifyUiView("Etage : " + stageNumber, ViewType.STAGE_COUNT);
             callReinforcement();
+            startTimerOnStageStarted();
         }
     }
     public void listenEnnemyBullets() {
@@ -238,7 +249,18 @@ public class GameController {
         }
     }
 
-
+    public void startTimerOnStageStarted() {
+        durationBeforeStartStage = 3;
+        timeline = new Timeline(new KeyFrame(Duration.millis(1000), e -> {
+            durationBeforeStartStage -= 1;
+            if (durationBeforeStartStage <= 0) {
+                timeline.stop();
+                timeline = null;
+            }
+        }));
+        timeline.setCycleCount(3);
+        timeline.play();
+    }
     public void spawnActor(Actor actor) {
         actor.notifyGameView(ViewType.ADD_ACTOR);
     }
@@ -247,7 +269,7 @@ public class GameController {
     }
     public void callReinforcement() {
         for (int i = 0; i < ennemyCount; i++) {
-            Ennemy ennemy = Factory.createEnemy(this.GAME_WIDTH, this.GAME_HEIGHT, this.currentPlayer.getPosition());
+            Ennemy ennemy = Factory.createEnemy(this.GAME_WIDTH, this.GAME_HEIGHT, this.currentPlayer.getPosition(), Human.ennemyColor);
             ennemies.add(ennemy);
             spawnActor(ennemy);
         }
@@ -256,9 +278,15 @@ public class GameController {
         return this.keys.getOrDefault(key, false);
     }
     public void initPlayer() {
-        Player player = Factory.createPlayer(this.GAME_WIDTH, this.GAME_HEIGHT);
+        Player player = Factory.createPlayer(this.GAME_WIDTH, this.GAME_HEIGHT, Human.playerColor);
         this.currentPlayer = player;
         this.spawnActor(player);
+    }
+    public void onChangePlayerColor(ColorPicker colorPicker) {
+        Human.playerColor = colorPicker.getValue();
+    }
+    public void onChangeEnnemyColor(ColorPicker colorPicker) {
+        Human.ennemyColor = colorPicker.getValue();
     }
     public void continueGame(String stageNumber) {
         this.stageNumber = Integer.parseInt(stageNumber);
@@ -273,22 +301,50 @@ public class GameController {
     public void displayMenu() {
         this.gameView.displayMenu();
     }
+    public void displayContinue() {
+        gameView.displayContinue();
+    }
     public void displaySettings() {this.gameView.displaySettings();}
     public void displayFinishGame() {
         this.gamepaused = true;
         this.gameView.displayFinishGame();
     }
     public void saveUser(String username) {
-        System.out.println(username);
+        String usersSaved = "";
+        boolean newFile = false;
+        try {
+            File usersFile = new File("users.txt");
+            Scanner scanner = new Scanner(usersFile);
+            while (scanner.hasNextLine()) {
+                usersSaved += scanner.nextLine() + "\n";
+            }
+            usersSaved += username + ";" + stageNumber;
+        } catch (FileNotFoundException e) {
+            System.out.println("File not found, create now");
+            newFile = true;
+        }
+        if (newFile) {
+            usersSaved = username + ";" + stageNumber;
+        }
+
         try {
             FileWriter fileWriter = new FileWriter("users.txt");
-            fileWriter.write(username  + ";" + stageNumber);
+            fileWriter.write(usersSaved);
             fileWriter.close();
             System.out.println("Successfully wrote to the file.");
         } catch (IOException e) {
-            System.out.println("An error occured.");
-            e.printStackTrace();
+            System.out.println("An Error occured");
         }
+        gameView.getUsers().clear();
+        gameView.getGamePane().getChildren().clear();
+        this.gameStarted = false;
+        this.gamepaused = false;
+        this.keys = new HashMap<>();
+        this.cursorPosition = new Position<>(0.0,0.0);
+        this.ennemies = new ArrayList<>();
+        this.ennemyBullets = new ArrayList<>();
+        this.playerBullets = new ArrayList<>();
+        this.displayMenu();
 
     }
 

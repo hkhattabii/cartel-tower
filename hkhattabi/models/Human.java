@@ -1,15 +1,15 @@
 package hkhattabi.models;
 import hkhattabi.models.weapon.Bullet;
 import hkhattabi.models.weapon.Weapon;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-
-import java.beans.PropertyChangeSupport;
 import java.util.Timer;
 import java.util.TimerTask;
 
 
 public abstract class Human extends Actor {
-    protected PropertyChangeSupport propertyChangeSupport;
+    public static Color playerColor = Color.BLUE;
+    public static Color ennemyColor = Color.RED;
     protected Weapon weaponEquipped;
     protected double health;
     protected boolean isReloading;

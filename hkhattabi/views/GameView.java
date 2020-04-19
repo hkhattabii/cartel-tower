@@ -8,9 +8,9 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -70,13 +70,12 @@ public class GameView {
          } catch (FileNotFoundException e) {
             System.out.println("Cannot find file");
             continueGameText.setFill(Color.GREY);
-            e.printStackTrace();
         }
-
-        continueGameText.setOnMouseClicked(e -> displayContinue());
         Text settingsGameText = renderText("OPTIONS", null, 32, true);
         Text quitGameText = renderText("QUITTER", null, 32, true);
         newGameText.setOnMouseClicked(e -> gameController.startGame());
+        continueGameText.setOnMouseClicked(e -> gameController.displayContinue());
+        settingsGameText.setOnMouseClicked(e -> gameController.displaySettings());
         vBox.getChildren().addAll(newGameText, continueGameText, settingsGameText, quitGameText);
         stage.setScene(scene);
     }
@@ -95,9 +94,6 @@ public class GameView {
         scene = new Scene(scrollPane);
         stage.setScene(scene);
     }
-    public void displaySettings() {
-
-    }
     public void displayGame(Player player, int stageNumber, int ennemyCount) {
         stageCountText = renderText("Etage : " + stageNumber, new Position<Double>(64.0, 64.0), 16, false);
         ennemyCountText = renderText("Ennemis restant : " + ennemyCount, new Position<Double>(1366.0 - 256.0, 64.0), 16, false);
@@ -105,7 +101,12 @@ public class GameView {
         weaponEquipedText = renderText(player.getWeaponEquipped().getName(), new Position<Double>(1366.0 - 300, 768.0 - 64.0), 16, false);
         munitionsCountText = renderText("Munition : " + player.getWeaponEquipped().getClip().size() + " / " + player.getWeaponEquipped().getMaxBulletCount(), new Position<Double>(1366.0 - 228, 768.0 - 64.0), 16, false);
         gamePane.getChildren().addAll(stageCountText,ennemyCountText , healthCountText, weaponEquipedText, munitionsCountText);
-        scene = new Scene(gamePane);
+        if (gamePane.getScene() == null) {
+            scene = new Scene(gamePane);
+        } else {
+            scene = gamePane.getScene();
+        }
+
         scene.setOnKeyPressed(e -> gameController.onKeyPressed(e.getCode()));
         scene.setOnKeyReleased(e -> gameController.onKeyReleased(e.getCode()));
         scene.setOnMouseClicked(e -> gameController.onMouseClicked());
@@ -158,8 +159,25 @@ public class GameView {
         dialog.showAndWait();
     }
 
+    public void displaySettings() {
+        VBox vBox = new VBox();
+        vBox.setAlignment(Pos.CENTER);
 
+        Text changeColorPlayerText = renderText("Couleur du joueur", null, 32, false);
+        Text changeColorEnemyText = renderText("Couleur des ennemis", null, 32, false);
+        Text returnText = renderText("RETOUR", null, 32, true);
+        ColorPicker playerColorPicker = new ColorPicker();
+        ColorPicker enemyColorPicker = new ColorPicker();
 
+        playerColorPicker.setOnAction(event -> gameController.onChangePlayerColor(playerColorPicker));
+        enemyColorPicker.setOnAction(event -> gameController.onChangeEnnemyColor(enemyColorPicker));
+        returnText.setOnMouseClicked(evvent -> gameController.displayMenu());
+
+        vBox.getChildren().addAll(changeColorPlayerText, playerColorPicker, changeColorEnemyText, enemyColorPicker, returnText);
+
+        stage.setScene(new Scene(vBox));
+
+    }
 
 
 
@@ -212,4 +230,11 @@ public class GameView {
         }
     }
 
+    public ArrayList<String> getUsers() {
+        return users;
+    }
+
+    public Pane getGamePane() {
+        return gamePane;
+    }
 }

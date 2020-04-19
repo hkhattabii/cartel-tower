@@ -18,7 +18,6 @@ public class Player extends  Human {
         super(actorView, position);
         this.health = 200;
         this.velocity = new Point2D(4, 4);
-        this.propertyChangeSupport = new PropertyChangeSupport(this);
         this.equipWeapons();
 
     }

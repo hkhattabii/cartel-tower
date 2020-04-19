@@ -23,7 +23,7 @@ public abstract class Weapon {
 
     public void fillClip() {
         for (int i = 0; i < maxBulletCount; i++){
-            this.clip.add(Factory.createBullet(this));
+            this.clip.add(Factory.createBullet(this, Human.playerColor, Human.ennemyColor));
         }
     }
     public double getDamage() {
