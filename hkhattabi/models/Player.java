@@ -3,7 +3,7 @@ package hkhattabi.models;
 import hkhattabi.models.weapon.*;
 import javafx.geometry.Point2D;
 import javafx.scene.shape.Rectangle;
-import java.beans.PropertyChangeSupport;
+
 import java.util.ArrayList;
 
 
@@ -43,45 +43,21 @@ public class Player extends  Human {
         this.weaponEquipped = this.weapons.get(0);
     }
 
+
     @Override
-    public void shoot(Position<Double> target) {
-        this.isShooting = true;
-        if (this.weaponEquipped instanceof Gun) {
-            shootWithGun(target);
-        } else if (this.weaponEquipped instanceof Shotgun) {
-            shootWithShotGun(target);
-        } else if (weaponEquipped instanceof  Bazooka) {
-            shootWithBazzoka(target);
-        }
+    public void hurt(double health) {
+        this.health = health;
+        this.notifyView("Vie : " + this.health, NotifyType.HEALTH_COUNT);
+    }
 
-        if (!isReloading && weaponEquipped.getClip().size() <= 0) {
-            isReloading = true;
-            reload();
-        }
-        notifyUiView("Munition " + weaponEquipped.getClip().size() + " /  " + weaponEquipped.getMaxBulletCount(), ViewType.MUNITION_COUNT);
+
+    @Override
+    public void die(int ennemyCount) {
+
     }
 
 
 
-    public void shootWithShotGun(Position<Double> target) {
-        if (weaponEquipped.getClip().size() >= 3) {
-            Bullet bullet = weaponEquipped.getClip().get(weaponEquipped.getClip().size() - 1);
-            Bullet bullet2 = weaponEquipped.getClip().get(weaponEquipped.getClip().size() - 2);
-            Bullet bullet3 = weaponEquipped.getClip().get(weaponEquipped.getClip().size() - 3);
-
-            computeBulletTrajectory(bullet, target);
-            computeBulletTrajectory(bullet2, new Position<>(target.getX(), target.getY() - 32));
-            computeBulletTrajectory(bullet3, new Position<>(target.getX(), target.getY() + 32));
-
-        }
-    }
-
-    public void shootWithBazzoka(Position<Double> target) {
-        if (weaponEquipped.getClip().size() > 0) {
-            Bullet bullet = weaponEquipped.getClip().get(weaponEquipped.getClip().size() -1);
-            computeBulletTrajectory(bullet, target);
-        }
-    }
 
     public void moveUp() {
         this.moveY(-this.velocity.getY());
@@ -95,15 +71,13 @@ public class Player extends  Human {
     public void moveLeft() {
         this.moveX(- this.velocity.getX());
     }
+
     public void setWeaponEquiped(int index) {
         this.weaponEquipped = this.weapons.get(index);
-        this.notifyUiView(weaponEquipped.getName(), ViewType.WEAPON_EQUIPED);
-        this.notifyUiView("Munition : " + weaponEquipped.getClip().size() + "/" + weaponEquipped.getClip().size(), ViewType.MUNITION_COUNT );
+        this.notifyView(weaponEquipped.getName(), NotifyType.WEAPON_EQUIPED);
+        this.notifyView("Munition : " + weaponEquipped.getClip().size() + "/" + weaponEquipped.getClip().size(), NotifyType.MUNITION_COUNT );
     }
 
 
-    @Override
-    public void die(int ennemyCount) {
 
-    }
 }

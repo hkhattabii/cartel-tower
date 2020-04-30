@@ -1,6 +1,6 @@
 package hkhattabi.models;
 
-public enum ViewType {
+public enum NotifyType {
     STAGE_COUNT,
     MUNITION_COUNT,
     HEALTH_COUNT,

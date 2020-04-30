@@ -53,19 +53,21 @@ public class GameController {
         this.ennemyBullets = new ArrayList<>();
         this.playerBullets = new ArrayList<>();
         gameView.init();
-        this.displayMenu();
+        this.onMenuClicked();
     }
 
 
 
 
-    public void startGame() {
+    public void startGame(boolean continueGame) {
         gameStarted = true;
-        Actor.gameView = gameView;
-        stageNumber = 1;
-        ennemyCount = 1;
+        Model.gameView = gameView;
+        if(!continueGame) {
+            stageNumber = 1;
+            ennemyCount = 1;
+        }
         initPlayer();
-        displayGame();
+        onGameStartClicked();
         callReinforcement();
         //startTimerOnStageStarted();
         AnimationTimer ticks = new AnimationTimer() {
@@ -93,14 +95,10 @@ public class GameController {
     }
     public void hurtHuman(Human human, double damage) {
         if (!human.isDead()) {
-            human.setHealth(human.getHealth() - damage);
+            human.hurt(human.getHealth() - damage);
             if (human.getHealth() <= 0) {
                 human.die(this.ennemies.size() - 1);
-                if (human instanceof  Ennemy) {
-                    this.destroyActor(human);
-                } else if (human instanceof Player) {
-                    this.destroyActor(human);
-                }
+                this.destroyActor(human);
             }
         }
     }
@@ -124,7 +122,7 @@ public class GameController {
         if (ennemies.size() == 0) {
             ennemyCount++;
             stageNumber += 1;
-            this.currentPlayer.notifyUiView("Etage : " + stageNumber, ViewType.STAGE_COUNT);
+            this.currentPlayer.notifyView("Etage : " + stageNumber, NotifyType.STAGE_COUNT);
             callReinforcement();
             startTimerOnStageStarted();
         }
@@ -197,7 +195,7 @@ public class GameController {
             }
         }
         if (this.isPressed(KeyCode.ESCAPE)) {
-            displayFinishGame();
+            onGameFinished();
         }
     }
     public void onKeyPressed(KeyCode keyCode) {
@@ -262,10 +260,10 @@ public class GameController {
         timeline.play();
     }
     public void spawnActor(Actor actor) {
-        actor.notifyGameView(ViewType.ADD_ACTOR);
+        actor.notifyView(actor.getView(), NotifyType.ADD_ACTOR);
     }
     public void destroyActor(Actor actor) {
-        actor.notifyGameView(ViewType.REMOVE_ACTOR);
+        actor.notifyView(actor.getView(), NotifyType.REMOVE_ACTOR);
     }
     public void callReinforcement() {
         for (int i = 0; i < ennemyCount; i++) {
@@ -288,24 +286,25 @@ public class GameController {
     public void onChangeEnnemyColor(ColorPicker colorPicker) {
         Human.ennemyColor = colorPicker.getValue();
     }
-    public void continueGame(String stageNumber) {
+    public void onLoadingUser(String stageNumber) {
+        System.out.println(stageNumber);
         this.stageNumber = Integer.parseInt(stageNumber);
         this.ennemyCount = Integer.parseInt(stageNumber);
-        startGame();
+        startGame(true);
 
 
     }
-    public void displayGame() {
+    public void onGameStartClicked() {
         this.gameView.displayGame(currentPlayer, this.stageNumber, this.ennemyCount);
     }
-    public void displayMenu() {
+    public void onMenuClicked() {
         this.gameView.displayMenu();
     }
-    public void displayContinue() {
+    public void onContinueclicked() {
         gameView.displayContinue();
     }
-    public void displaySettings() {this.gameView.displaySettings();}
-    public void displayFinishGame() {
+    public void onSettingsClicked() {this.gameView.displaySettings();}
+    public void onGameFinished() {
         this.gamepaused = true;
         this.gameView.displayFinishGame();
     }
@@ -344,7 +343,7 @@ public class GameController {
         this.ennemies = new ArrayList<>();
         this.ennemyBullets = new ArrayList<>();
         this.playerBullets = new ArrayList<>();
-        this.displayMenu();
+        gameView.displayMenu();
 
     }
 

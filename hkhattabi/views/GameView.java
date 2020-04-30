@@ -3,7 +3,7 @@ package hkhattabi.views;
 import hkhattabi.controllers.GameController;
 import hkhattabi.models.Player;
 import hkhattabi.models.Position;
-import hkhattabi.models.ViewType;
+import hkhattabi.models.NotifyType;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -19,7 +19,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -73,9 +72,9 @@ public class GameView {
         }
         Text settingsGameText = renderText("OPTIONS", null, 32, true);
         Text quitGameText = renderText("QUITTER", null, 32, true);
-        newGameText.setOnMouseClicked(e -> gameController.startGame());
-        continueGameText.setOnMouseClicked(e -> gameController.displayContinue());
-        settingsGameText.setOnMouseClicked(e -> gameController.displaySettings());
+        newGameText.setOnMouseClicked(e -> gameController.startGame(false));
+        continueGameText.setOnMouseClicked(e -> gameController.onContinueclicked());
+        settingsGameText.setOnMouseClicked(e -> gameController.onSettingsClicked());
         vBox.getChildren().addAll(newGameText, continueGameText, settingsGameText, quitGameText);
         stage.setScene(scene);
     }
@@ -86,7 +85,7 @@ public class GameView {
             String[] userArr = user.split(";");
             Text text = renderText(userArr[0] + " : étage " + userArr[1], null, 22, true);
             text.setOnMouseClicked(e -> {
-                gameController.continueGame(userArr[1]);
+                gameController.onLoadingUser(userArr[1]);
             });
             vBox.getChildren().addAll(text);
         }
@@ -171,7 +170,7 @@ public class GameView {
 
         playerColorPicker.setOnAction(event -> gameController.onChangePlayerColor(playerColorPicker));
         enemyColorPicker.setOnAction(event -> gameController.onChangeEnnemyColor(enemyColorPicker));
-        returnText.setOnMouseClicked(evvent -> gameController.displayMenu());
+        returnText.setOnMouseClicked(evvent -> gameController.onMenuClicked());
 
         vBox.getChildren().addAll(changeColorPlayerText, playerColorPicker, changeColorEnemyText, enemyColorPicker, returnText);
 
@@ -204,8 +203,8 @@ public class GameView {
         return text;
     }
 
-    public void updateView(Object value, ViewType viewType) {
-            switch (viewType) {
+    public void updateView(Object value, NotifyType notifyType) {
+            switch (notifyType) {
                 case STAGE_COUNT:
                     stageCountText.setText((String)value);
                     break;

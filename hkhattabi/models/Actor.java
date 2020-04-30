@@ -4,10 +4,9 @@ import javafx.scene.shape.Rectangle;
 
 
 
-public class Actor {
+abstract public class Actor extends Model {
     public static double width = 16;
     public static double height = 16;
-    public static GameView gameView;
     protected Rectangle view;
     protected Position<Double> position;
 
@@ -21,15 +20,6 @@ public class Actor {
     public boolean isCollidedWith(Actor actor) {
         return this.view.getBoundsInParent().intersects(actor.getView().getBoundsInParent());
     }
-    public void notifyUiView(String newText, ViewType viewType) {
-        gameView.updateView(newText, viewType);
-    }
-    public void notifyGameView(ViewType viewType) {
-        gameView.updateView(view, viewType);
-    }
-
-
-
 
     public Rectangle getView() {
         return view;

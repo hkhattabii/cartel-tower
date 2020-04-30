@@ -1,6 +1,5 @@
 package hkhattabi.models;
 
-import hkhattabi.models.weapon.Bullet;
 import hkhattabi.models.weapon.Gun;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -34,22 +33,15 @@ public class Ennemy extends Human {
     @Override
     public void die(int ennemyCount) {
         this.isDead = true;
-        this.notifyUiView("Ennemis restant : " + ennemyCount, ViewType.ENNEMY_COUNT);
+        this.notifyView("Ennemis restant : " + ennemyCount, NotifyType.ENNEMY_COUNT);
         timeline.stop();
     }
-    @Override
-    public void shoot(Position<Double> target) {
-        this.isShooting = true;
-        if (weaponEquipped.getClip().size() > 0) {
-            Bullet bullet = weaponEquipped.getClip().get(weaponEquipped.getClip().size() - 1);
-            computeBulletTrajectory(bullet, target);
-        }
-        if (!isReloading && weaponEquipped.getClip().size() == 0) {
-            isReloading = true;
-            reload();
 
-        }
+    @Override
+    public void hurt(double health) {
+        this.health = health;
     }
+
     public void aimPlayer(Position<Double> position) {
         this.playerPosition = position;
     }

@@ -1,5 +1,4 @@
 package hkhattabi.models;
-import hkhattabi.models.weapon.Bullet;
 import hkhattabi.models.weapon.Weapon;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -24,36 +23,17 @@ public abstract class Human extends Actor {
 
     public abstract void equipWeapons();
     public abstract void die(int ennemyCount);
-    public abstract void shoot(Position<Double> target);
 
+    public void shoot(Position<Double> target) {
+        this.isShooting = true;
+        weaponEquipped.fire(target);
 
-    public void shootWithGun(Position<Double> target) {
-        if (weaponEquipped.getClip().size() > 0) {
-            Bullet bullet = weaponEquipped.getClip().get(weaponEquipped.getClip().size() - 1);
-            computeBulletTrajectory(bullet, target);
+        if (!isReloading && weaponEquipped.getClip().size() <= 0) {
+            isReloading = true;
+            reload();
         }
+
     }
-
-    public void computeBulletTrajectory(Bullet bullet, Position<Double> target) {
-        double m;
-        double p;
-        Position<Double> pointStart = position;
-        int direction = isLookingRight ? 1 : -1;
-
-        m = (target.getY() - pointStart.getY()) / (target.getX() - pointStart.getX());
-        p = pointStart.getX() == 0 ? pointStart.getY() : pointStart.getY() - (m * pointStart.getX());
-
-        bullet.setM(m);
-        bullet.setP(p);
-        bullet.setDirection(direction);
-        bullet.position.setX(direction == 1 ? this.position.getX() + this.getWidth() : this.position.getX());
-        bullet.position.setY(this.position.getY());
-        bullet.view.setTranslateX(bullet.position.getX());
-        bullet.view.setTranslateY(bullet.position.getY());
-        bullet.exitBarrel();
-        weaponEquipped.getClip().remove(bullet);
-    }
-
 
     public void reload() {
         Timer timer = new Timer();
@@ -68,6 +48,9 @@ public abstract class Human extends Actor {
         timer.schedule(task, 500);
     }
 
+
+    public abstract void hurt(double health);
+
     public Weapon getWeaponEquipped() {
         return weaponEquipped;
     }
@@ -77,6 +60,11 @@ public abstract class Human extends Actor {
     public void setShooting(boolean shooting) {
         isShooting = shooting;
     }
+
+    public boolean isLookingRight() {
+        return isLookingRight;
+    }
+
     public boolean isShooting() {
         return isShooting;
     }
@@ -86,10 +74,11 @@ public abstract class Human extends Actor {
     public double getHealth() {
         return health;
     }
+
     public void setHealth(double health) {
         this.health = health;
         if (this instanceof  Player) {
-            this.notifyUiView("Vie : " + this.health, ViewType.HEALTH_COUNT);
+            this.notifyView("Vie : " + this.health, NotifyType.HEALTH_COUNT);
         }
     }
 }
